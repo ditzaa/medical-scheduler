@@ -88,3 +88,9 @@ Caused by: org.h2.mvstore.MVStoreException: The file is locked: D:/Facultate/Mas
 	at org.h2.mvstore.SingleFileStore.open(SingleFileStore.java:81)
 	at org.h2.mvstore.MVStore.<init>(MVStore.java:286)
 	... 26 more
+2025-12-28 20:34:55.211383+02:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PACIENTS" not found; SQL statement:
+select * from pacients [42102-240]
+2025-12-28 20:35:05.266364+02:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PACIENT" not found; SQL statement:
+select * from pacient [42102-240]

@@ -10,14 +10,33 @@ import com.medisched.services.factory.AppointmentFactory;
 import com.medisched.services.observer.AppointmentSubject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
 @Service
+@Transactional
 public class AppointmentServiceImpl {
 
     @Autowired
     private AppointmentRepository appointmentRepository;
+
+    public void saveAppointment(Appointment appointment) {
+        // Folosim Command Pattern pentru a salva programarea
+        CreateAppointmentCommand saveCommand = new CreateAppointmentCommand(appointmentRepository, appointment);
+        saveCommand.execute();
+
+        // Notificăm medicul (Observer Pattern)
+        if (appointment.getDoctor() != null) {
+            appointment.getDoctor().update("Aveți o programare nouă de tip " + appointment.getType() +
+                    " pe data de " + appointment.getAppointmentDate());
+        }
+
+        // Logăm acțiunea (Singleton)
+        ClinicLogger.getInstance().addLog("Programare salvată pentru pacientul: " +
+                (appointment.getPatient() != null ? appointment.getPatient().getLastName() : "Anonim") +
+                " la Dr. " + (appointment.getDoctor() != null ? appointment.getDoctor().getLastName() : "N/A"));
+    }
 
     public void createMedicalAppointment(AppointmentFactory factory, Doctor doctor) {
         // 1. UTILIZARE ABSTRACT FACTORY

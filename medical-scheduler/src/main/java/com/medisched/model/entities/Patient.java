@@ -8,6 +8,7 @@ public class Patient extends User {
 
     private String cnp;
     private String medicalHistory;
+    private Integer age;
 
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL)
     private List<Appointment> appointments;
@@ -17,6 +18,8 @@ public class Patient extends User {
     public void setCnp(String cnp) { this.cnp = cnp; }
     public String getMedicalHistory() { return medicalHistory; }
     public void setMedicalHistory(String medicalHistory) { this.medicalHistory = medicalHistory; }
+    public Integer getAge() { return age; }
+    public void setAge(Integer age) { this.age = age; }
     public List<Appointment> getAppointments() { return appointments; }
     public void setAppointments(List<Appointment> appointments) { this.appointments = appointments; }
 }

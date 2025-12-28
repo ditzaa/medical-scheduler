@@ -23,6 +23,27 @@
     </div>
 </div>
 
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow border-primary text-center">
+            <div class="card-body">
+                <h2 class="card-title">Sunt Pacient</h2>
+                <p class="card-text">Ai nevoie de o consultație? Programează-te acum.</p>
+                <a th:href="@{/pacients}" class="btn btn-primary btn-lg w-100">Fă o programare</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card shadow border-success text-center">
+            <div class="card-body">
+                <h2 class="card-title">Sunt Medic</h2>
+                <p class="card-text">Vizualizează programările ca medic.</p>
+                <a th:href="@{/medics}" class="btn btn-success btn-lg w-100">Vezi Programări</a>
+            </div>
+        </div>
+    </div>
+
 <div th:if="${status}" class="alert alert-info mt-3" th:text="${status}"></div>
 </body>
 </html>
