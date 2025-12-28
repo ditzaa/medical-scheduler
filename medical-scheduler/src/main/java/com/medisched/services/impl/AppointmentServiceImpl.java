@@ -1,0 +1,48 @@
+package com.medisched.services.impl;
+
+import com.medisched.config.ClinicLogger;
+import com.medisched.model.entities.Appointment;
+import com.medisched.model.entities.Doctor;
+import com.medisched.model.protocols.MedicalProtocol;
+import com.medisched.repositories.AppointmentRepository;
+import com.medisched.services.command.CreateAppointmentCommand;
+import com.medisched.services.factory.AppointmentFactory;
+import com.medisched.services.observer.AppointmentSubject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+
+@Service
+public class AppointmentServiceImpl {
+
+    @Autowired
+    private AppointmentRepository appointmentRepository;
+
+    public void createMedicalAppointment(AppointmentFactory factory, Doctor doctor) {
+        // 1. UTILIZARE ABSTRACT FACTORY
+        // Cream familia de obiecte: Programarea si Protocolul aferent
+        Appointment appointment = factory.createAppointment();
+        MedicalProtocol protocol = factory.createProtocol();
+
+        appointment.setDoctor(doctor);
+        appointment.setAppointmentDate(LocalDateTime.now().plusDays(1)); // Programare pt maine
+
+        // 2. UTILIZARE COMMAND PATTERN
+        // Incapsulam actiunea de salvare intr-o comanda
+        CreateAppointmentCommand saveCommand = new CreateAppointmentCommand(appointmentRepository, appointment);
+        saveCommand.execute();
+
+        // 3. UTILIZARE OBSERVER PATTERN
+        // Notificam medicul despre noua programare
+        AppointmentSubject subject = new AppointmentSubject();
+        subject.addObserver(doctor); // Doctorul este "observatorul"
+        subject.notifyObservers("Programare noua: " + appointment.getType() +
+                ". Protocol: " + protocol.getInstructions());
+
+        // 4. UTILIZARE SINGLETON
+        // Logam actiunea in logger-ul global al clinicii
+        ClinicLogger.getInstance().addLog("S-a creat o programare de tip " +
+                appointment.getType() + " pentru Dr. " + doctor.getLastName());
+    }
+}
