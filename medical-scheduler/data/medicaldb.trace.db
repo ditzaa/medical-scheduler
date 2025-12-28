@@ -94,3 +94,14 @@ select * from pacients [42102-240]
 2025-12-28 20:35:05.266364+02:00 jdbc[13]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PACIENT" not found; SQL statement:
 select * from pacient [42102-240]
+2025-12-28 22:37:27.954647+02:00 jdbc[33]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "insert into doctor values()\000d\000a\000d\000a[*]select * from doctor"; SQL statement:
+insert into doctor values()
+
+select * from doctor [42000-240]
+2025-12-28 22:47:56.225641+02:00 jdbc[33]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "update users set (email [*]= ""andreiionescu@ase.ro"", password = ""pass1"") where id = 1"; expected "., [, ,, )"; SQL statement:
+update users set (email = "andreiionescu@ase.ro", password = "pass1") where id = 1 [42001-240]
+2025-12-28 23:11:52.636611+02:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "APPOINTMENT" not found; SQL statement:
+select * from appointment [42102-240]

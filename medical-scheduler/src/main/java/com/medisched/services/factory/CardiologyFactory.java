@@ -11,7 +11,7 @@ public class CardiologyFactory implements AppointmentFactory{
     public Appointment createAppointment() {
         // Returnează un obiect Appointment configurat pentru cardiologie
         Appointment app = new Appointment();
-        app.setType("CARDIOLOGIE");
+        app.setType("Cardiologie");
         return app;
     }
 

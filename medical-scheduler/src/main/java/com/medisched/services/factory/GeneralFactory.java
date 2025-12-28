@@ -11,7 +11,7 @@ public class GeneralFactory implements AppointmentFactory {
     @Override
     public Appointment createAppointment() {
         Appointment app = new Appointment();
-        app.setType("CONSULTATIE_GENERALA");
+        app.setType("Medicina generala");
         return app;
     }
 

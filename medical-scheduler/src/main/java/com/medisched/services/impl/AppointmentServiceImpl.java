@@ -5,7 +5,9 @@ import com.medisched.model.entities.Appointment;
 import com.medisched.model.entities.Doctor;
 import com.medisched.model.protocols.MedicalProtocol;
 import com.medisched.repositories.AppointmentRepository;
+import com.medisched.services.command.CancelAppointmentCommand;
 import com.medisched.services.command.CreateAppointmentCommand;
+import com.medisched.services.command.EditAppointmentCommand;
 import com.medisched.services.factory.AppointmentFactory;
 import com.medisched.services.observer.AppointmentSubject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,37 @@ public class AppointmentServiceImpl {
         ClinicLogger.getInstance().addLog("Programare salvată pentru pacientul: " +
                 (appointment.getPatient() != null ? appointment.getPatient().getLastName() : "Anonim") +
                 " la Dr. " + (appointment.getDoctor() != null ? appointment.getDoctor().getLastName() : "N/A"));
+    }
+
+    public void updateAppointment(Appointment appointment) {
+        // Folosim EditAppointmentCommand
+        EditAppointmentCommand editCommand = new EditAppointmentCommand(appointmentRepository, appointment);
+        editCommand.execute();
+
+        // Notificăm medicul
+        if (appointment.getDoctor() != null) {
+            appointment.getDoctor().update("Programarea dvs. de pe data de " + appointment.getAppointmentDate() +
+                    " a fost modificată.");
+        }
+
+        ClinicLogger.getInstance().addLog("Programare ACTUALIZATĂ pentru pacientul: " +
+                (appointment.getPatient() != null ? appointment.getPatient().getLastName() : "Anonim"));
+    }
+
+    public void cancelAppointment(Long appointmentId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId).orElse(null);
+        
+        // Folosim CancelAppointmentCommand
+        CancelAppointmentCommand cancelCommand = new CancelAppointmentCommand(appointmentRepository, appointmentId);
+        cancelCommand.execute();
+
+        // Notificăm medicul dacă am găsit programarea înainte de ștergere
+        if (appointment != null && appointment.getDoctor() != null) {
+            appointment.getDoctor().update("Programarea de pe data de " + appointment.getAppointmentDate() +
+                    " a fost ANULATĂ.");
+            ClinicLogger.getInstance().addLog("Programare ANULATĂ pentru pacientul: " +
+                    (appointment.getPatient() != null ? appointment.getPatient().getLastName() : "Anonim"));
+        }
     }
 
     public void createMedicalAppointment(AppointmentFactory factory, Doctor doctor) {

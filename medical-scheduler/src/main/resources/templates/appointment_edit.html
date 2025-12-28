@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Editare Programare</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="container mt-5">
+<div class="card shadow">
+    <div class="card-header bg-warning text-dark"><h3>Editare Programare #<span th:text="${appointment.id}"></span></h3></div>
+    <div class="card-body">
+        <form th:action="@{/appointment/update}" method="post">
+            <input type="hidden" name="id" th:value="${appointment.id}">
+
+            <div class="mb-3">
+                <label class="form-label">Pacient</label>
+                <input type="text" class="form-control" th:value="${appointment.patient.firstName + ' ' + appointment.patient.lastName}" disabled>
+                <small class="text-muted">Numele pacientului nu poate fi modificat de aici.</small>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Tip Programare</label>
+                <input type="text" class="form-control" th:value="${appointment.type}" disabled>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Medic</label>
+                <select name="doctorId" class="form-select" required>
+                    <option th:each="doc : ${allDoctors}"
+                            th:value="${doc.id}"
+                            th:text="${doc.firstName + ' ' + doc.lastName}"
+                            th:selected="${doc.id == appointment.doctor.id}"></option>
+                </select>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Data</label>
+                    <input type="date" name="date" class="form-control" th:value="${datePart}" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Ora</label>
+                    <input type="time" name="time" class="form-control" th:value="${timePart}" required>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="/medics" class="btn btn-secondary">Anulează</a>
+                <button type="submit" class="btn btn-primary">Salvează Modificările</button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
