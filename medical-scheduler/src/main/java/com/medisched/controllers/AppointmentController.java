@@ -10,6 +10,7 @@ import com.medisched.repositories.UserRepository;
 import com.medisched.services.factory.AppointmentFactory;
 import com.medisched.services.factory.CardiologyFactory;
 import com.medisched.services.factory.GeneralFactory;
+import com.medisched.services.impl.AppointmentManagerServiceImpl;
 import com.medisched.services.impl.AppointmentServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -27,6 +28,9 @@ public class AppointmentController {
 
     @Autowired
     private AppointmentServiceImpl appointmentService;
+
+    @Autowired
+    private AppointmentManagerServiceImpl appointmentManagerService;
 
     @Autowired
     private UserRepository userRepository;
@@ -57,7 +61,7 @@ public class AppointmentController {
         Doctor doc = doctorRepository.findAll().stream().findFirst().orElse(null);
 
         if (doc != null) {
-            appointmentService.createMedicalAppointment(cardiologyFactory, doc);
+            appointmentManagerService.createMedicalAppointmentWithFactory(cardiologyFactory, doc, "standard");
             model.addAttribute("status", "Programare la Cardiologie creată cu succes!");
         } else {
             model.addAttribute("status", "Eroare: Nu există medici în baza de date!");
@@ -71,7 +75,6 @@ public class AppointmentController {
         return "appointment_form";
     }
 
-    // Procesare salvare programare din formular
     @PostMapping("/appointment/save")
     public String saveAppointment(@RequestParam Long doctorId,
                                   @RequestParam String specialization,
@@ -80,6 +83,7 @@ public class AppointmentController {
                                   @RequestParam String firstName,
                                   @RequestParam String lastName,
                                   @RequestParam Integer age,
+                                  @RequestParam String patientStatus,
                                   Model model) {
         
         Doctor doctor = doctorRepository.findById(doctorId).orElse(null);
@@ -89,10 +93,7 @@ public class AppointmentController {
             Patient patient = patientRepository.findByFirstNameAndLastName(firstName, lastName).orElse(null);
 
             if (patient == null) {
-                // Dacă nu există ca pacient, verificăm dacă există în tabela 'users' (poate e doar un User sau alt tip)
-                // În acest caz, pentru a evita coliziunea de ID-uri sau problemele de ierarhie,
-                // creăm un pacient nou. Dacă ID-urile sunt decalate din cauza inserărilor manuale,
-                // Hibernate va încerca să folosească următorul ID disponibil conform secvenței.
+                // Dacă nu există ca pacient, creăm unul nou
                 patient = new Patient();
                 patient.setFirstName(firstName);
                 patient.setLastName(lastName);
@@ -106,7 +107,6 @@ public class AppointmentController {
             try {
                 patientRepository.save(patient);
             } catch (Exception e) {
-                // Dacă tot crapă, înseamnă că există o problemă mai gravă de persistență
                 model.addAttribute("status", "Eroare critică la salvarea pacientului: " + e.getMessage());
                 return "index";
             }
@@ -123,9 +123,11 @@ public class AppointmentController {
             LocalDateTime appointmentDateTime = LocalDateTime.parse(date + "T" + time + ":00");
             appointment.setAppointmentDate(appointmentDateTime);
             
-            appointmentService.saveAppointment(appointment);
+            // UTILIZARE STRATEGY PATTERN (prin serviciu)
+            appointmentManagerService.processAndSaveAppointment(appointment, patientStatus);
+            
             model.addAttribute("status", "Programarea a fost salvată cu succes pentru pacientul " + 
-                    firstName + " " + lastName + " (vârstă: " + age + ")!");
+                    firstName + " " + lastName + " (Preț calculat: " + appointment.getPrice() + " RON)!");
         } else {
             model.addAttribute("status", "Eroare: Medicul selectat nu a fost găsit!");
         }

@@ -13,6 +13,7 @@ public class Appointment {
 
     private String type;
     private LocalDateTime appointmentDate;
+    private Double price;
 
     // Relațiile cu Doctor și Patient
     @ManyToOne
@@ -36,6 +37,9 @@ public class Appointment {
 
     public LocalDateTime getAppointmentDate() { return appointmentDate; }
     public void setAppointmentDate(LocalDateTime appointmentDate) { this.appointmentDate = appointmentDate; }
+
+    public Double getPrice() { return price; }
+    public void setPrice(Double price) { this.price = price; }
 
     public Doctor getDoctor() { return doctor; }
     public void setDoctor(Doctor doctor) { this.doctor = doctor; }

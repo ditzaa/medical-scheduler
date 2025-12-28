@@ -21,6 +21,7 @@
                         <th>Medic</th>
                         <th>Pacient</th>
                         <th>Vârstă</th>
+                        <th>Preț (RON)</th>
                         <th>Acțiuni</th>
                     </tr>
                 </thead>
@@ -32,6 +33,7 @@
                         <td th:text="${prog.doctor != null ? prog.doctor.firstName + ' ' + prog.doctor.lastName : 'N/A'}"></td>
                         <td th:text="${prog.patient != null ? prog.patient.firstName + ' ' + prog.patient.lastName : 'Anonim'}"></td>
                         <td th:text="${prog.patient != null ? prog.patient.age : '-'}"></td>
+                        <td th:text="${prog.price != null ? prog.price + ' RON' : '-'}"></td>
                         <td>
                             <div class="btn-group btn-group-sm">
                                 <a th:href="@{/appointment/edit/{id}(id=${prog.id})}" class="btn btn-outline-primary">

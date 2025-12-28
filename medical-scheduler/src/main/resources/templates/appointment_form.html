@@ -26,6 +26,16 @@
             </div>
 
             <div class="mb-3">
+                <label class="form-label">Statut Pacient (pentru tarifare)</label>
+                <select name="patientStatus" class="form-select" required>
+                    <option value="standard">Standard (Preț întreg)</option>
+                    <option value="insurance">Asigurat (0 RON)</option>
+                    <option value="student">Student (50% reducere)</option>
+                    <option value="emergency">Urgență (+20% taxă)</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
                 <label class="form-label d-block">Specializare</label>
                 <div class="form-check form-check-inline">
                     <input class="form-check-input spec-radio" type="radio" name="specialization" value="Cardiologie" id="cardio" required>
