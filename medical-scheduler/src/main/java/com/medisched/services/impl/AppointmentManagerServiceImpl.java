@@ -3,8 +3,11 @@ package com.medisched.services.impl;
 import com.medisched.config.ClinicLogger;
 import com.medisched.model.entities.Appointment;
 import com.medisched.model.entities.Doctor;
+import com.medisched.model.entities.Patient;
 import com.medisched.model.protocols.MedicalProtocol;
 import com.medisched.repositories.AppointmentRepository;
+import com.medisched.repositories.DoctorRepository;
+import com.medisched.services.email.EmailService;
 import com.medisched.services.factory.AppointmentFactory;
 import com.medisched.services.observer.AppointmentSubject;
 import com.medisched.services.strategy.PricingStrategy;
@@ -22,9 +25,45 @@ public class AppointmentManagerServiceImpl {
     private AppointmentRepository appointmentRepository;
 
     @Autowired
+    private DoctorRepository doctorRepository;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
     private Map<String, PricingStrategy> pricingStrategies;
 
     private static final double BASE_PRICE = 200.0;
+
+    /**
+     * Construiește detaliile pacientului pentru mesajele de notificare
+     * @param patient pacientul pentru care se construiesc detaliile
+     * @return string cu detaliile pacientului formatate
+     */
+    private String buildPatientDetails(Patient patient) {
+        if (patient == null) {
+            return "";
+        }
+
+        StringBuilder detailsBuilder = new StringBuilder();
+        detailsBuilder.append("Detalii pacient:\n")
+            .append("Nume: ").append(patient.getFirstName()).append(" ").append(patient.getLastName()).append("\n")
+            .append("Email: ").append(patient.getEmail()).append("\n");
+
+        if (patient.getAge() != null) {
+            detailsBuilder.append("Vârstă: ").append(patient.getAge()).append("\n");
+        }
+
+        if (patient.getCnp() != null && !patient.getCnp().isEmpty()) {
+            detailsBuilder.append("CNP: ").append(patient.getCnp()).append("\n");
+        }
+
+        if (patient.getMedicalHistory() != null && !patient.getMedicalHistory().isEmpty()) {
+            detailsBuilder.append("Istoric medical: ").append(patient.getMedicalHistory()).append("\n");
+        }
+
+        return detailsBuilder.toString();
+    }
 
     public void processAndSaveAppointment(Appointment appointment, String strategyType) {
         // 1. UTILIZARE STRATEGY PATTERN pentru calculul prețului
@@ -32,13 +71,31 @@ public class AppointmentManagerServiceImpl {
         double finalPrice = strategy.calculatePrice(BASE_PRICE);
         appointment.setPrice(finalPrice);
 
-        // Salvare directă (am eliminat Command Pattern)
+        // Salvare directă
         appointmentRepository.save(appointment);
 
-        // 2. UTILIZARE OBSERVER PATTERN (Notificăm medicul)
+        // 2. UTILIZARE OBSERVER PATTERN (Notificăm medicul prin email)
         if (appointment.getDoctor() != null) {
-            appointment.getDoctor().update("Nouă programare (" + strategy.getName() + ") pe data de " 
-                    + appointment.getAppointmentDate() + ". Preț: " + finalPrice + " RON");
+            Doctor doctor = appointment.getDoctor();
+
+            // Construim un mesaj mai detaliat care include informații despre pacient
+            StringBuilder messageBuilder = new StringBuilder();
+            messageBuilder.append("Nouă programare (" + strategy.getName() + ") pe data de ")
+                    .append(appointment.getAppointmentDate())
+                    .append(". Preț: ")
+                    .append(finalPrice)
+                    .append(" RON\n\n");
+
+            // Adăugăm detaliile pacientului folosind metoda comună
+            messageBuilder.append(buildPatientDetails(appointment.getPatient()));
+
+            String message = messageBuilder.toString();
+
+            // Utilizăm doar Observer pattern pentru notificări
+            // Creăm un subiect și notificăm observatorul (doctorul) cu EmailService
+            AppointmentSubject appointmentSubject = new AppointmentSubject();
+            appointmentSubject.addObserver(doctor);
+            appointmentSubject.notifyObservers(message, emailService);
         }
 
         // 3. UTILIZARE SINGLETON (Logare)
@@ -60,9 +117,18 @@ public class AppointmentManagerServiceImpl {
         // Procesăm și salvăm folosind restul pattern-urilor
         processAndSaveAppointment(appointment, strategyType);
 
-        // Notificare suplimentară despre protocol
-        AppointmentSubject subject = new AppointmentSubject();
-        subject.addObserver(doctor);
-        subject.notifyObservers("Protocol medical generat: " + protocol.getInstructions());
+        // Notificare suplimentară despre protocol prin Observer pattern
+        StringBuilder protocolMessageBuilder = new StringBuilder();
+        protocolMessageBuilder.append("Protocol medical generat: ").append(protocol.getInstructions()).append("\n\n");
+
+        // Adăugăm detaliile pacientului folosind metoda comună
+        protocolMessageBuilder.append(buildPatientDetails(appointment.getPatient()));
+
+        String protocolMessage = protocolMessageBuilder.toString();
+
+        // Utilizăm doar Observer pattern pentru notificări despre protocol
+        AppointmentSubject appointmentSubject = new AppointmentSubject();
+        appointmentSubject.addObserver(doctor);
+        appointmentSubject.notifyObservers(protocolMessage, emailService);
     }
 }

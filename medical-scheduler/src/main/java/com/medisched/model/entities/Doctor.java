@@ -1,10 +1,14 @@
 package com.medisched.model.entities;
 
+import com.medisched.services.email.EmailService;
 import com.medisched.services.observer.AppointmentObserver;
 import jakarta.persistence.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Entity
+@Component
 public class Doctor extends User implements AppointmentObserver {
 
     private String specialization;
@@ -16,8 +20,20 @@ public class Doctor extends User implements AppointmentObserver {
     // Implementarea metodei din interfața AppointmentObserver
     @Override
     public void update(String message) {
-        // În aplicația reală, aici s-ar trimite un email sau SMS
-        System.out.println("Notificare pentru Dr. " + getLastName() + ": " + message);
+        // Fallback pentru compatibilitate cu versiunea veche
+        System.out.println("Trimitere email către Dr. " + getLastName() + " la adresa " + getEmail() + ": " + message);
+    }
+
+    @Override
+    public void update(String message, EmailService emailService) {
+        // Trimitem email folosind EmailService primit ca parametru
+        String subject = "Notificare programare - MediSched";
+        if (emailService != null) {
+            emailService.sendEmail(getEmail(), subject, message);
+        } else {
+            // Fallback pentru cazul în care emailService este null
+            System.out.println("Trimitere email către Dr. " + getLastName() + " la adresa " + getEmail() + ": " + message);
+        }
     }
 
     // Getters și Setters

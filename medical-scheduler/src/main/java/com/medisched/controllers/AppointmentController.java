@@ -11,7 +11,6 @@ import com.medisched.services.factory.AppointmentFactory;
 import com.medisched.services.factory.CardiologyFactory;
 import com.medisched.services.factory.GeneralFactory;
 import com.medisched.services.impl.AppointmentManagerServiceImpl;
-import com.medisched.services.impl.AppointmentServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,9 +24,6 @@ import java.time.LocalDateTime;
 
 @Controller
 public class AppointmentController {
-
-    @Autowired
-    private AppointmentServiceImpl appointmentService;
 
     @Autowired
     private AppointmentManagerServiceImpl appointmentManagerService;
@@ -85,9 +81,9 @@ public class AppointmentController {
                                   @RequestParam Integer age,
                                   @RequestParam String patientStatus,
                                   Model model) {
-        
+
         Doctor doctor = doctorRepository.findById(doctorId).orElse(null);
-        
+
         if (doctor != null) {
             // Încercăm să găsim pacientul după nume
             Patient patient = patientRepository.findByFirstNameAndLastName(firstName, lastName).orElse(null);
@@ -100,10 +96,10 @@ public class AppointmentController {
                 patient.setEmail(firstName.toLowerCase() + "." + lastName.toLowerCase() + "@example.com");
                 patient.setPassword("pass123"); // Parolă default pentru pacienți noi
             }
-            
+
             // Actualizam varsta (fie ca e nou sau existent)
             patient.setAge(age);
-            
+
             try {
                 patientRepository.save(patient);
             } catch (Exception e) {
@@ -114,24 +110,24 @@ public class AppointmentController {
             // UTILIZARE ABSTRACT FACTORY pentru crearea obiectului Appointment
             AppointmentFactory factory = 
                     specialization.equals("Cardiologie") ? cardiologyFactory : generalFactory;
-            
+
             Appointment appointment = factory.createAppointment();
             appointment.setDoctor(doctor);
             appointment.setPatient(patient); // Legam pacientul
-            
+
             // Combinăm data și ora
             LocalDateTime appointmentDateTime = LocalDateTime.parse(date + "T" + time + ":00");
             appointment.setAppointmentDate(appointmentDateTime);
-            
+
             // UTILIZARE STRATEGY PATTERN (prin serviciu)
             appointmentManagerService.processAndSaveAppointment(appointment, patientStatus);
-            
+
             model.addAttribute("status", "Programarea a fost salvată cu succes pentru pacientul " + 
                     firstName + " " + lastName + " (Preț calculat: " + appointment.getPrice() + " RON)!");
         } else {
             model.addAttribute("status", "Eroare: Medicul selectat nu a fost găsit!");
         }
-        
+
         return "index";
     }
 
@@ -142,51 +138,5 @@ public class AppointmentController {
         return "appointments";
     }
 
-    // Editare programare - Afișare formular
-    @GetMapping("/appointment/edit/{id}")
-    public String editAppointmentForm(@PathVariable Long id, Model model) {
-        Appointment appointment = appointmentRepository.findById(id).orElse(null);
-        if (appointment != null) {
-            model.addAttribute("appointment", appointment);
-            model.addAttribute("allDoctors", doctorRepository.findAll());
-            // Trimitem data și ora separat pentru input-urile HTML
-            model.addAttribute("datePart", appointment.getAppointmentDate().toLocalDate());
-            model.addAttribute("timePart", appointment.getAppointmentDate().toLocalTime());
-            return "appointment_edit";
-        }
-        return "redirect:/medics";
-    }
-
-    // Procesare actualizare programare
-    @PostMapping("/appointment/update")
-    public String updateAppointment(@RequestParam Long id,
-                                   @RequestParam Long doctorId,
-                                   @RequestParam String date,
-                                   @RequestParam String time,
-                                   Model model) {
-        
-        Appointment appointment = appointmentRepository.findById(id).orElse(null);
-        Doctor doctor = doctorRepository.findById(doctorId).orElse(null);
-
-        if (appointment != null && doctor != null) {
-            appointment.setDoctor(doctor);
-            LocalDateTime appointmentDateTime = LocalDateTime.parse(date + "T" + time + ":00");
-            appointment.setAppointmentDate(appointmentDateTime);
-            
-            appointmentService.updateAppointment(appointment);
-            model.addAttribute("status", "Programarea a fost actualizată cu succes!");
-        } else {
-            model.addAttribute("status", "Eroare: Date invalide pentru actualizare!");
-        }
-        
-        return "index";
-    }
-
-    // Anulare programare
-    @PostMapping("/appointment/cancel/{id}")
-    public String cancelAppointment(@PathVariable Long id, Model model) {
-        appointmentService.cancelAppointment(id);
-        model.addAttribute("status", "Programarea a fost anulată!");
-        return "index";
-    }
+    // Metodele de editare și anulare a programărilor au fost eliminate deoarece nu mai sunt folosite
 }

@@ -13,6 +13,8 @@ public class Appointment {
 
     private String type;
     private LocalDateTime appointmentDate;
+
+    @Column(nullable = false)
     private Double price;
 
     // Relațiile cu Doctor și Patient

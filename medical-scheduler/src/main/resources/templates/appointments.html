@@ -22,7 +22,6 @@
                         <th>Pacient</th>
                         <th>Vârstă</th>
                         <th>Preț (RON)</th>
-                        <th>Acțiuni</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -34,18 +33,6 @@
                         <td th:text="${prog.patient != null ? prog.patient.firstName + ' ' + prog.patient.lastName : 'Anonim'}"></td>
                         <td th:text="${prog.patient != null ? prog.patient.age : '-'}"></td>
                         <td th:text="${prog.price != null ? prog.price + ' RON' : '-'}"></td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <a th:href="@{/appointment/edit/{id}(id=${prog.id})}" class="btn btn-outline-primary">
-                                    <i class="bi bi-pencil-square"></i> Edit
-                                </a>
-                                <form th:action="@{/appointment/cancel/{id}(id=${prog.id})}" method="post" style="display:inline;" onsubmit="return confirm('Sigur doriți să anulați această programare?');">
-                                    <button type="submit" class="btn btn-outline-danger">
-                                        <i class="bi bi-trash"></i> Anulează
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
                     </tr>
                 </tbody>
             </table>
